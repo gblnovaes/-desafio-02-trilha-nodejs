@@ -10,11 +10,27 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const {username} = request.headers
+  
+  const usernameAlreadyExists = users.some((user) => user.username === username);
+
+  if (!usernameAlreadyExists) {
+    return response.status(404).json({ error: 'User Not Exists' });      
+  }
+   
+  const user = users.find((user) => user.username === username);
+  request.user = user
+  next()
 }
 
-function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+function checksCreateTodosUserAvailability(request, response, next) {  
+  const {user} = request
+  
+  if((user.todos.length <=9 && user.pro === false || user.pro === true)){
+    next()
+  }
+  
+  return response.status(403).json({ error: 'User Update Plan to Pro Version' });
 }
 
 function checksTodoExists(request, response, next) {
@@ -25,15 +41,16 @@ function findUserById(request, response, next) {
   // Complete aqui
 }
 
-app.post('/users', (request, response) => {
+app.post('/users',(request, response) => {
   const { name, username } = request.body;
-
+  
   const usernameAlreadyExists = users.some((user) => user.username === username);
 
   if (usernameAlreadyExists) {
     return response.status(400).json({ error: 'Username already exists' });
   }
 
+  
   const user = {
     id: uuidv4(),
     name,
@@ -67,7 +84,6 @@ app.patch('/users/:id/pro', findUserById, (request, response) => {
 
 app.get('/todos', checksExistsUserAccount, (request, response) => {
   const { user } = request;
-
   return response.json(user.todos);
 });
 

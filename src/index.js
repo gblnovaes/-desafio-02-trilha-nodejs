@@ -35,10 +35,51 @@ function checksCreateTodosUserAvailability(request, response, next) {
 
 function checksTodoExists(request, response, next) {
   // Complete aqui
+  const {username} = request.headers
+  const {id} = request.params
+  
+  const usernameAlreadyExists = users.some((user) => user.username === username);
+
+  if (!usernameAlreadyExists) {
+    return response.status(404).json({ error: 'User Not Exists' });      
+  }
+  
+  const user = users.find((user) => user.username === username)
+  
+  const isIdTodoValid = user.todos.find((todo) => todo.id === id)
+  if(checkIfValidUUID(id) && isIdTodoValid){
+    request.todo = isIdTodoValid
+    request.user = user
+    next()
+  }else{
+    return response.status(400).json({ error: 'Todo Id Invalid' })
+
+  }
+  return response.status(404).json({ error: 'Todo Not Found' })
+}
+
+
+function checkIfValidUUID(str) {
+  // Regular expression to check if string is a valid UUID
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
+  return regexExp.test(str);
 }
 
 function findUserById(request, response, next) {
   // Complete aqui
+  const {id} = request.params
+  
+  const userByIdAlreadyExists = users.some((user) => user.id === id);
+  
+  if(userByIdAlreadyExists){
+    const user = users.find((user) => user.id === id)
+    request.user = user
+    next()
+  }
+  
+  return response.status(404).json({ error: 'User not found' });
+
 }
 
 app.post('/users',(request, response) => {

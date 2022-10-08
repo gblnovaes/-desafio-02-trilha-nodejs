@@ -47,14 +47,27 @@ function checksTodoExists(request, response, next) {
   const user = users.find((user) => user.username === username)
   
   const isIdTodoValid = user.todos.find((todo) => todo.id === id)
-  if(checkIfValidUUID(id) && isIdTodoValid){
+  
+  
+  if(!validate(id)){
+    return response.status(400).json({ error: 'UUID is Invalid' })
+  }
+  if(!isIdTodoValid){
+    return response.status(404).json({ error: 'Todo Id Invalid' })
+  }
+  
+  if(!checkIfValidUUID(id)){
+    return response.status(400).json({ error: 'Todo UUID Invalid' })
+  }
+  
+  if( isIdTodoValid && checkIfValidUUID(id)){
     request.todo = isIdTodoValid
     request.user = user
     next()
   }else{
-    return response.status(400).json({ error: 'Todo Id Invalid' })
-
+    return response.status(400).json({ error: 'Todo UUID Invalid' })
   }
+  
   return response.status(404).json({ error: 'Todo Not Found' })
 }
 
